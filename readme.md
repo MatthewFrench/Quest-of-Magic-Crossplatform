@@ -1,0 +1,1 @@
+This is a work in progress port of Quest of Magic to web and desktop using Rust.
