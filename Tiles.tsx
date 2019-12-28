@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.3.1" name="Tiles" tilewidth="44" tileheight="44" tilecount="175" columns="0">
+<tileset version="1.2" tiledversion="1.3.1" name="Tiles" tilewidth="44" tileheight="44" tilecount="180" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image width="44" height="44" source="Separate Tiles/0.png"/>
@@ -525,5 +525,20 @@
  </tile>
  <tile id="174">
   <image width="44" height="44" source="Separate Tiles/Treasure Chest.png"/>
+ </tile>
+ <tile id="175">
+  <image width="44" height="44" source="Separate Tiles/176.png"/>
+ </tile>
+ <tile id="176">
+  <image width="44" height="44" source="Separate Tiles/177.png"/>
+ </tile>
+ <tile id="177">
+  <image width="44" height="44" source="Separate Tiles/178.png"/>
+ </tile>
+ <tile id="178">
+  <image width="44" height="44" source="Separate Tiles/179.png"/>
+ </tile>
+ <tile id="179">
+  <image width="44" height="44" source="Separate Tiles/180.png"/>
  </tile>
 </tileset>
