@@ -792,8 +792,8 @@
 0,174,0,174,174,174,0,0,0,174,174,174,174,174,174,174,
 0,0,0,174,174,174,0,0,174,174,174,174,174,0,0,0,
 174,0,0,174,174,174,0,174,174,174,174,174,0,0,174,174,
-0,0,0,174,174,174,0,174,174,174,174,174,0,174,174,0,
-0,174,0,174,174,174,0,174,174,174,174,174,0,174,174,0,
+0,0,0,174,174,174,174,174,174,174,174,174,0,174,174,0,
+0,174,0,174,174,174,174,174,174,174,174,174,0,174,174,0,
 0,0,0,174,174,174,0,0,0,0,0,0,0,174,174,0,
 0,0,0,174,174,174,174,174,174,174,174,174,174,174,174,174,
 0,0,0,174,174,174,174,174,174,174,174,174,174,174,174,174
@@ -811,7 +811,7 @@
 0,174,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,174,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,174,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,174,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+174,174,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,174,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,174,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,174,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -945,49 +945,25 @@
   </data>
  </layer>
  <objectgroup id="6" name="NPCs and Interactions">
-  <object id="19" gid="257" x="704" y="-572" width="44" height="44">
-   <properties>
-    <property name="event" value="healer"/>
-   </properties>
-  </object>
-  <object id="20" gid="3" x="88" y="0" width="44" height="44">
-   <properties>
-    <property name="event" value="house"/>
-    <property name="name" value="starting-town-2"/>
-   </properties>
-  </object>
-  <object id="21" gid="3" x="0" y="44" width="44" height="44">
-   <properties>
-    <property name="event" value="house"/>
-    <property name="name" value="starting-town-1"/>
-   </properties>
-  </object>
-  <object id="22" gid="3" x="132" y="88" width="44" height="44">
+  <object id="19" name="healer" type="npc" gid="257" x="704" y="-572" width="44" height="44"/>
+  <object id="20" name="starting-town-2" type="house" gid="3" x="88" y="0" width="44" height="44"/>
+  <object id="21" name="starting-town-1" type="house" gid="3" x="0" y="44" width="44" height="44"/>
+  <object id="22" name="starting-town-3" type="house" gid="3" x="132" y="88" width="44" height="44">
    <properties>
     <property name="event" value="house"/>
     <property name="name" value="starting-town-3"/>
    </properties>
   </object>
-  <object id="23" gid="117" x="132" y="0" width="44" height="44">
-   <properties>
-    <property name="event" value="sign"/>
-    <property name="name" value="starting-town"/>
-   </properties>
-  </object>
-  <object id="24" gid="172" x="616" y="-572" width="44" height="44">
-   <properties>
-    <property name="event" value="cave"/>
-    <property name="name" value="starting-cave"/>
-   </properties>
-  </object>
-  <object id="25" gid="34" x="968" y="-836" width="44" height="44"/>
+  <object id="23" name="starting-town-sign" type="sign" gid="117" x="132" y="0" width="44" height="44"/>
+  <object id="24" name="starting-cave" type="entrance" gid="172" x="616" y="-572" width="44" height="44"/>
+  <object id="25" name="dwarf-outpost" type="entrance" gid="34" x="968" y="-836" width="44" height="44"/>
   <object id="26" gid="35" x="968" y="-880" width="44" height="44"/>
-  <object id="28" gid="4" x="1056" y="-1188" width="44" height="44"/>
-  <object id="29" gid="37" x="1012" y="-1232" width="44" height="44"/>
-  <object id="30" gid="179" x="0" y="-1188" width="44" height="44"/>
-  <object id="31" gid="217" x="132" y="-1144" width="44" height="44"/>
-  <object id="32" gid="203" x="-132" y="-1188" width="44" height="44"/>
-  <object id="33" gid="179" x="132" y="-1408" width="44" height="44"/>
-  <object id="34" gid="213" x="88" y="-1540" width="44" height="44"/>
+  <object id="28" name="dwarf-sign" type="sign" gid="4" x="1056" y="-1188" width="44" height="44"/>
+  <object id="29" name="dwarf-keep" type="entrance" gid="37" x="1012" y="-1232" width="44" height="44"/>
+  <object id="30" name="elf-sign-1" type="sign" gid="179" x="0" y="-1188" width="44" height="44"/>
+  <object id="31" name="town-elf-1" type="npc" gid="217" x="132" y="-1144" width="44" height="44"/>
+  <object id="32" name="town-elf-2" type="npc" gid="203" x="-132" y="-1188" width="44" height="44"/>
+  <object id="33" name="elf-sign-2" type="sign" gid="179" x="132" y="-1408" width="44" height="44"/>
+  <object id="34" name="town-elf-3" type="npc" gid="213" x="88" y="-1540" width="44" height="44"/>
  </objectgroup>
 </map>
