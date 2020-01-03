@@ -5,7 +5,8 @@ use std::collections::HashMap;
 
 pub mod loading_screen;
 
-pub trait Screen: 'static {
+//: 'static
+pub trait Screen {
     fn new() -> Self
     where
         Self: Sized;

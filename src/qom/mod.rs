@@ -1,10 +1,6 @@
 extern crate quicksilver;
 
-use std::fs::File;
-use std::io::BufReader;
-use std::path::Path;
-
-use tiled::{parse, parse_file, Map, Tileset};
+use tiled::{parse_file, Map, Tileset};
 
 use crate::qom::screens::loading_screen::LoadingScreen;
 use crate::qom::screens::Screen;
@@ -29,6 +25,7 @@ pub const LAYER_NPCS_AND_INTERACTIONS: &str = "NPCs and Interactions";
 
 pub struct QuestOfMagicData {
     /// All game data goes here
+    pub overworld_map: Option<Map>,
     pub image_assets: HashMap<String, Image>,
 }
 
@@ -42,6 +39,7 @@ impl State for QuestOfMagic {
     fn new() -> Result<QuestOfMagic> {
         let mut qom = QuestOfMagic {
             data: QuestOfMagicData {
+                overworld_map: None,
                 image_assets: HashMap::new(),
             },
             menu_stack: Vec::new(),
