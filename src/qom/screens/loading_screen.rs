@@ -1,11 +1,12 @@
 use crate::qom::screens::Screen;
 use crate::qom::tiled::{parse, Map, Tileset};
+use crate::qom::transitions::ScreenTransition;
 use crate::qom::QuestOfMagicData;
 use quicksilver::geom::Rectangle;
 use quicksilver::graphics::Background::Col;
+use quicksilver::load_file;
 use quicksilver::prelude::{Asset, Color, Image, Window};
 use quicksilver::{combinators::ok, Future};
-use quicksilver::{load_file, Result};
 use std::collections::HashMap;
 use std::mem;
 use std::path::Path;
@@ -81,26 +82,28 @@ impl Screen for LoadingScreen {
         }
     }
 
-    fn update(&mut self, _window: &mut Window, data: &mut QuestOfMagicData) -> Result<()> {
+    fn update(&mut self, _window: &mut Window, data: &mut QuestOfMagicData) -> ScreenTransition {
         let loading_progress = &mut self.loading_progress;
         let images = &mut self.images;
         let map_optional = &mut self.map;
         // Check if loading is complete
-        self.assets.execute(|(map, image_assets)| {
-            if loading_progress.tileset_images_to_load == 0 {
-                map_optional.replace(map.to_owned());
-                // Calculate how much images are to be loaded
-                loading_progress.tileset_images_to_load = image_assets.len() as i32;
-            }
-            // Append images that finish
-            for (source, image_asset) in image_assets {
-                image_asset.execute(|image| {
-                    images.insert(source.parse().unwrap(), image.to_owned());
-                    Ok(())
-                })?;
-            }
-            Ok(())
-        })?;
+        self.assets
+            .execute(|(map, image_assets)| {
+                if loading_progress.tileset_images_to_load == 0 {
+                    map_optional.replace(map.to_owned());
+                    // Calculate how much images are to be loaded
+                    loading_progress.tileset_images_to_load = image_assets.len() as i32;
+                }
+                // Append images that finish
+                for (source, image_asset) in image_assets {
+                    image_asset.execute(|image| {
+                        images.insert(source.parse().unwrap(), image.to_owned());
+                        Ok(())
+                    })?;
+                }
+                Ok(())
+            })
+            .unwrap();
 
         if loading_progress.tileset_images_to_load > 0
             && images.len() == loading_progress.tileset_images_to_load as usize
@@ -112,10 +115,10 @@ impl Screen for LoadingScreen {
             // return transition to flip to next screen
             //todo
         }
-        Ok(())
+        ScreenTransition::None
     }
 
-    fn draw(&mut self, window: &mut Window) -> Result<()> {
+    fn draw(&mut self, window: &mut Window) {
         // Draw loading progress
         let width = window.screen_size().x;
         let height = window.screen_size().y;
@@ -135,6 +138,5 @@ impl Screen for LoadingScreen {
             &Rectangle::new((100, height - 100.0), (full_width * progress, 50)),
             Col(Color::from_rgba(75, 200, 75, 1.0)),
         );
-        Ok(())
     }
 }
