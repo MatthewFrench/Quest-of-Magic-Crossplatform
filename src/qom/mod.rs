@@ -83,7 +83,7 @@ impl State for QuestOfMagic {
     }
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
         if let Some(screen) = self.screen_stack.last_mut() {
-            let transition = screen.event(event, window);
+            let transition = screen.event(event, window, &mut self.data);
         }
         Ok(())
     }
@@ -91,7 +91,7 @@ impl State for QuestOfMagic {
         window.clear(Color::BLACK)?;
         // draw the top of the stack
         if let Some(screen) = self.screen_stack.last_mut() {
-            screen.draw(window);
+            screen.draw(window, &mut self.data);
         }
         Ok(())
     }

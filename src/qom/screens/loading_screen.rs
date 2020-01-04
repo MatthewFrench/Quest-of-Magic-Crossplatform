@@ -123,7 +123,7 @@ impl Screen for LoadingScreen {
         ScreenTransition::None
     }
 
-    fn draw(&mut self, window: &mut Window) {
+    fn draw(&mut self, window: &mut Window, _data: &mut QuestOfMagicData) {
         // Draw loading progress
         let width = window.screen_size().x;
         let height = window.screen_size().y;

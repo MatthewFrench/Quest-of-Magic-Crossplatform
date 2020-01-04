@@ -13,8 +13,13 @@ pub trait Screen {
     fn update(&mut self, _window: &mut Window, _data: &mut QuestOfMagicData) -> ScreenTransition {
         ScreenTransition::None
     }
-    fn event(&mut self, _event: &Event, _window: &mut Window) -> ScreenTransition {
+    fn event(
+        &mut self,
+        _event: &Event,
+        _window: &mut Window,
+        _data: &mut QuestOfMagicData,
+    ) -> ScreenTransition {
         ScreenTransition::None
     }
-    fn draw(&mut self, window: &mut Window) {}
+    fn draw(&mut self, window: &mut Window, _data: &mut QuestOfMagicData) {}
 }
