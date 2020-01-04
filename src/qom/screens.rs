@@ -7,7 +7,7 @@ pub mod world_screen;
 
 //: 'static
 pub trait Screen {
-    fn new() -> Self
+    fn new(_data: &mut QuestOfMagicData) -> Self
     where
         Self: Sized;
     fn update(&mut self, _window: &mut Window, _data: &mut QuestOfMagicData) -> ScreenTransition {

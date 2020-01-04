@@ -1,6 +1,7 @@
+use crate::qom::screens::world_screen::WorldScreen;
 use crate::qom::screens::Screen;
 use crate::qom::tiled::{parse, Map, Tileset};
-use crate::qom::transitions::ScreenTransition;
+use crate::qom::transitions::{ScreenTransition, TransitionEffect};
 use crate::qom::QuestOfMagicData;
 use quicksilver::geom::Rectangle;
 use quicksilver::graphics::Background::Col;
@@ -27,7 +28,7 @@ pub struct LoadingScreen {
 }
 
 impl Screen for LoadingScreen {
-    fn new() -> LoadingScreen {
+    fn new(_data: &mut QuestOfMagicData) -> LoadingScreen {
         portable_log!("Loading screen");
 
         // Load Tiled map and tile sets
@@ -105,6 +106,7 @@ impl Screen for LoadingScreen {
             })
             .unwrap();
 
+        // If loaded all images (refactor when there are more resources to load)
         if loading_progress.tileset_images_to_load > 0
             && images.len() == loading_progress.tileset_images_to_load as usize
         {
@@ -113,7 +115,10 @@ impl Screen for LoadingScreen {
             // Put the images into the game data
             mem::swap(&mut self.images, &mut data.image_assets);
             // return transition to flip to next screen
-            //todo
+            return ScreenTransition::Replace(
+                Box::new(WorldScreen::new(data)),
+                TransitionEffect::None,
+            );
         }
         ScreenTransition::None
     }

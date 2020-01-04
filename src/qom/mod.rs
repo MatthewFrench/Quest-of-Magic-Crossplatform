@@ -4,6 +4,7 @@ use tiled::Map;
 
 use crate::qom::screens::loading_screen::LoadingScreen;
 use crate::qom::screens::Screen;
+use crate::qom::transitions::ScreenTransition;
 use quicksilver::prelude::{Event, Image};
 use quicksilver::{
     graphics::Color,
@@ -11,6 +12,7 @@ use quicksilver::{
     Result,
 };
 use std::collections::HashMap;
+
 pub mod screens;
 pub mod tiled;
 pub mod transitions;
@@ -35,6 +37,26 @@ pub struct QuestOfMagic {
     pub screen_stack: Vec<Box<dyn Screen>>,
 }
 
+impl QuestOfMagic {
+    fn handle_transition(&mut self, transition: ScreenTransition) {
+        match transition {
+            ScreenTransition::None => {}
+            ScreenTransition::Pop => {
+                self.screen_stack.pop();
+            }
+            ScreenTransition::Push(screen, transition_effect) => {
+                self.screen_stack.push(screen);
+                // Todo transitions
+            }
+            ScreenTransition::Replace(screen, transition_effect) => {
+                self.screen_stack.pop();
+                self.screen_stack.push(screen);
+                // Todo transitions
+            }
+        }
+    }
+}
+
 impl State for QuestOfMagic {
     fn new() -> Result<QuestOfMagic> {
         let mut qom = QuestOfMagic {
@@ -45,7 +67,8 @@ impl State for QuestOfMagic {
             screen_stack: Vec::new(),
         };
         // Push loading screen to stack
-        qom.screen_stack.push(Box::new(LoadingScreen::new()));
+        qom.screen_stack
+            .push(Box::new(LoadingScreen::new(&mut qom.data)));
         Ok(qom)
     }
     fn update(&mut self, window: &mut Window) -> Result<()> {
@@ -54,6 +77,7 @@ impl State for QuestOfMagic {
         */
         if let Some(screen) = self.screen_stack.last_mut() {
             let transition = screen.update(window, &mut self.data);
+            self.handle_transition(transition);
         }
         Ok(())
     }
