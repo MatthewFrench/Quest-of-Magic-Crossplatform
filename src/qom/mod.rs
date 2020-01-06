@@ -17,18 +17,11 @@ pub mod screens;
 pub mod tiled;
 pub mod transitions;
 
-pub const LAYER_GROUND_1: &str = "Ground 1";
-pub const LAYER_GROUND_2: &str = "Ground 2";
-pub const LAYER_ABOVE_GROUND_1: &str = "Above Ground 1";
-pub const LAYER_ABOVE_GROUND_2: &str = "Above Ground 2";
-pub const LAYER_ABOVE_GROUND_3: &str = "Above Ground 3";
-pub const LAYER_TILE_COLLISION_MAP: &str = "Tile Collision Map";
-pub const LAYER_NPCS_AND_INTERACTIONS: &str = "NPCs and Interactions";
-
 pub struct QuestOfMagicData {
     /// All game data goes here
     pub overworld_map: Option<Map>,
-    pub image_assets: HashMap<String, Image>,
+    // gid : image
+    pub image_assets: HashMap<u32, Image>,
 }
 
 pub struct QuestOfMagic {

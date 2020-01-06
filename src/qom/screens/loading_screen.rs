@@ -21,9 +21,9 @@ pub struct LoadingScreenProgress {
 }
 
 pub struct LoadingScreen {
-    assets: Asset<(Map, Vec<(String, Asset<Image>)>)>,
+    assets: Asset<(Map, Vec<(u32, Asset<Image>)>)>,
     loading_progress: LoadingScreenProgress,
-    images: HashMap<String, Image>,
+    images: HashMap<u32, Image>,
     map: Option<Map>,
 }
 
@@ -54,18 +54,21 @@ impl Screen for LoadingScreen {
                 })
                 .and_then(|map| {
                     portable_log!("Got map! {:?}", map);
-                    let mut image_assets: Vec<(String, Asset<Image>)> = Vec::new();
+                    let mut image_assets: Vec<(u32, Asset<Image>)> = Vec::new();
                     for tileset in &map.tilesets {
                         portable_log!("Got tileset: {:?}", tileset);
                         let tileset: &Tileset = tileset;
+                        let mut current_gid = tileset.first_gid;
+                        // Using first_gid, generate all the tile numbers
                         for tile in &tileset.tiles {
                             for image in &tile.images {
                                 portable_log!("Found image: {:?}", image.source);
                                 image_assets.push((
-                                    String::from(image.source.clone()),
+                                    current_gid,
                                     Asset::new(Image::load(image.source.clone())),
                                 ));
                             }
+                            current_gid += 1;
                         }
                     }
                     portable_log!("Images to load: {}", image_assets.len());
@@ -98,7 +101,7 @@ impl Screen for LoadingScreen {
                 // Append images that finish
                 for (source, image_asset) in image_assets {
                     image_asset.execute(|image| {
-                        images.insert(source.parse().unwrap(), image.to_owned());
+                        images.insert(source.to_owned(), image.to_owned());
                         Ok(())
                     })?;
                 }

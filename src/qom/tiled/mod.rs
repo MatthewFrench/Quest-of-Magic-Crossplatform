@@ -320,6 +320,15 @@ impl Map {
         }
         maximum_ts
     }
+
+    pub fn get_layer_by_name(&self, layer_name: &String) -> Option<&Layer> {
+        for layer in self.layers.iter() {
+            if layer.name.eq(layer_name) {
+                return Some(layer);
+            }
+        }
+        None
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
@@ -657,7 +666,7 @@ pub struct Layer {
     pub visible: bool,
     /// The tiles are arranged in rows. Each tile is a number which can be used
     ///  to find which tileset it belongs to and can then be rendered.
-    pub tiles: Vec<Vec<LayerTile>>,
+    pub tiles: HashMap<i32, HashMap<i32, LayerTile>>,
     pub properties: Properties,
     pub layer_index: u32,
 }
@@ -680,7 +689,8 @@ impl Layer {
             ],
             TiledError::MalformedAttributes("layer must have a name".to_string())
         );
-        let mut tiles = Vec::new();
+        let mut tiles = HashMap::new();
+
         let mut properties = HashMap::new();
         parse_tag!(parser, "layer", {
             "data" => |attrs| {
@@ -998,14 +1008,15 @@ fn parse_data<R: Read>(
     parser: &mut EventReader<R>,
     attrs: Vec<OwnedAttribute>,
     width: u32,
-) -> Result<Vec<Vec<LayerTile>>, TiledError> {
+) -> Result<HashMap<i32, HashMap<i32, LayerTile>>, TiledError> {
     let ((e, c), ()) = get_attrs!(
         attrs,
         optionals: [
             ("encoding", encoding, |v| Some(v)),
             ("compression", compression, |v| Some(v)),
         ],
-        required: [],
+        required: [
+        ],
         TiledError::MalformedAttributes("data must have an encoding and a compression".to_string())
     );
 
@@ -1016,11 +1027,13 @@ fn parse_data<R: Read>(
             ))
         }
         (Some(e), None) => match e.as_ref() {
-            "base64" => return parse_base64(parser).map(|v| convert_to_tile(&v, width)),
+            //"base64" => return parse_base64(parser).map(|v| convert_to_tile(&v, width)),
             "csv" => return decode_csv(parser),
             e => return Err(TiledError::Other(format!("Unknown encoding format {}", e))),
         },
+        /*
         (Some(e), Some(c)) => match (e.as_ref(), c.as_ref()) {
+            /*
             ("base64", "zlib") => {
                 return parse_base64(parser)
                     .and_then(decode_zlib)
@@ -1031,6 +1044,7 @@ fn parse_data<R: Read>(
                     .and_then(decode_gzip)
                     .map(|v| convert_to_tile(&v, width))
             }
+            */
             (e, c) => {
                 return Err(TiledError::Other(format!(
                     "Unknown combination of {} encoding and {} compression",
@@ -1038,6 +1052,7 @@ fn parse_data<R: Read>(
                 )))
             }
         },
+        */
         _ => return Err(TiledError::Other("Missing encoding format".to_string())),
     };
 }
@@ -1081,33 +1096,63 @@ fn decode_gzip(data: Vec<u8>) -> Result<Vec<u8>, TiledError> {
     Ok(data)
 }
 
-fn decode_csv<R: Read>(parser: &mut EventReader<R>) -> Result<Vec<Vec<LayerTile>>, TiledError> {
+fn decode_csv<R: Read>(
+    parser: &mut EventReader<R>,
+) -> Result<HashMap<i32, HashMap<i32, LayerTile>>, TiledError> {
+    let mut tiles: HashMap<i32, HashMap<i32, LayerTile>> = HashMap::new();
+    let mut current_x = 0;
+    let mut current_y = 0;
     loop {
         match parser.next().map_err(TiledError::XmlDecodingError)? {
+            XmlEvent::StartElement {
+                name, attributes, ..
+            } => {
+                if name.local_name == "chunk" {
+                    let ((), (x, y)) = get_attrs!(
+                        attributes,
+                        optionals: [
+                        ],
+                        required: [
+                            ("x", x, |v:String| v.parse().ok()),
+                            ("y", y, |v:String| v.parse().ok()),
+                        ],
+                        TiledError::MalformedAttributes("Incorrect layer chunk".to_string())
+                    );
+                    current_x = x;
+                    current_y = y;
+                }
+            }
             XmlEvent::Characters(s) => {
-                let mut rows: Vec<Vec<LayerTile>> = Vec::new();
+                let mut offset_x = 0;
+                let mut offset_y = 0;
                 for row in s.split('\n') {
                     if row.trim() == "" {
                         continue;
                     }
-                    rows.push(
-                        row.split(',')
-                            .filter(|v| v.trim() != "")
-                            .map(|v| v.replace('\r', "").parse().unwrap())
-                            .map(|id| LayerTile::new(id))
-                            .collect(),
-                    );
+                    let row_tiles: Vec<LayerTile> = row
+                        .split(',')
+                        .filter(|v| v.trim() != "")
+                        .map(|v| v.replace('\r', "").parse().unwrap())
+                        .map(|id| LayerTile::new(id))
+                        .collect();
+                    for row_tile in row_tiles {
+                        let row = tiles.entry(current_y + offset_y).or_insert(HashMap::new());
+                        row.entry(current_x + offset_x).or_insert(row_tile);
+                        offset_x += 1;
+                    }
+                    offset_y += 1;
+                    offset_x = 0;
                 }
-                return Ok(rows);
             }
             XmlEvent::EndElement { name, .. } => {
                 if name.local_name == "data" {
-                    return Ok(Vec::new());
+                    break;
                 }
             }
             _ => {}
         }
     }
+    return Ok(tiles);
 }
 
 fn convert_to_tile(all: &Vec<u8>, width: u32) -> Vec<Vec<LayerTile>> {
