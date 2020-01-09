@@ -53,16 +53,15 @@ impl Screen for LoadingScreen {
                         .expect("The file must be parse-able"))
                 })
                 .and_then(|map| {
-                    portable_log!("Got map! {:?}", map);
+                    portable_log!("Got map!");
                     let mut image_assets: Vec<(u32, Asset<Image>)> = Vec::new();
                     for tileset in &map.tilesets {
-                        portable_log!("Got tileset: {:?}", tileset);
+                        portable_log!("Got tileset!");
                         let tileset: &Tileset = tileset;
                         let mut current_gid = tileset.first_gid;
                         // Using first_gid, generate all the tile numbers
                         for tile in &tileset.tiles {
                             for image in &tile.images {
-                                portable_log!("Found image: {:?}", image.source);
                                 image_assets.push((
                                     current_gid,
                                     Asset::new(Image::load(image.source.clone())),

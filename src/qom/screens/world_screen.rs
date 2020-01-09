@@ -82,7 +82,6 @@ impl WorldScreen {
 impl Screen for WorldScreen {
     fn new(data: &mut QuestOfMagicData) -> WorldScreen {
         portable_log!("World screen");
-        portable_log!("Data: {:?}", data.overworld_map);
 
         let mut world = WorldScreen {
             ..Default::default()
