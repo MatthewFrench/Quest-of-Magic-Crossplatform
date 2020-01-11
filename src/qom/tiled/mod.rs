@@ -329,6 +329,15 @@ impl Map {
         }
         None
     }
+
+    pub fn get_object_group_by_name(&self, object_group_name: &String) -> Option<&ObjectGroup> {
+        for object_group in self.object_groups.iter() {
+            if object_group.name.eq(object_group_name) {
+                return Some(object_group);
+            }
+        }
+        None
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]

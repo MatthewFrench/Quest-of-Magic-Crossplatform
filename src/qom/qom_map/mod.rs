@@ -1,8 +1,12 @@
+use crate::qom::qom_map::qom_layer::QomLayer;
+use crate::qom::qom_map::qom_object::QomObject;
 use crate::qom::tiled::Map;
 use quicksilver::geom::Vector;
-use quicksilver::graphics::Background::Img;
-use quicksilver::prelude::{Image, Shape, Window};
+use quicksilver::prelude::{Image, Window};
 use std::collections::{HashMap, HashSet};
+
+pub mod qom_layer;
+pub mod qom_object;
 
 const TILE_WIDTH: i32 = 44;
 const TILE_HEIGHT: i32 = 44;
@@ -12,36 +16,8 @@ const LAYER_ABOVE_GROUND_1: &str = "Above Ground 1";
 const LAYER_ABOVE_GROUND_2: &str = "Above Ground 2";
 const LAYER_ABOVE_GROUND_3: &str = "Above Ground 3";
 const LAYER_TILE_COLLISION_MAP: &str = "Tile Collision Map";
-const LAYER_NPCS_AND_INTERACTIONS: &str = "NPCs and Interactions";
+const OBJECT_LAYER_NPCS_AND_INTERACTIONS: &str = "NPCs and Interactions";
 
-pub struct QomLayer {
-    pub name: String,
-    // (x, y), image_id
-    pub tiles: HashMap<(i32, i32), u32>,
-    pub layer_index: u32,
-}
-impl QomLayer {
-    fn render(
-        &self,
-        // todo: Window isn't required, drawables can be drawn directly to context
-        window: &mut Window,
-        images: &HashMap<u32, Image>,
-        view_position: Vector,
-    ) {
-        for ((x, y), tile) in &self.tiles {
-            let image = images.get(&tile);
-            if let Some(image) = image {
-                window.draw(
-                    &image.area().with_center((
-                        *x as f32 * TILE_WIDTH as f32 - view_position.x,
-                        *y as f32 * TILE_HEIGHT as f32 - view_position.y,
-                    )),
-                    Img(image),
-                );
-            }
-        }
-    }
-}
 pub struct Bounds<T> {
     x1: T,
     y1: T,
@@ -52,7 +28,8 @@ pub struct QomMap {
     bounds: Bounds<i32>,
     render_layers: Vec<QomLayer>,
     collision_tiles: HashSet<(i32, i32)>,
-    // todo: objects
+    // todo: split into object types, signs/houses/npcs/entrances
+    interactive_objects: Vec<QomObject>,
 }
 impl QomMap {
     pub fn empty() -> QomMap {
@@ -65,6 +42,7 @@ impl QomMap {
             },
             render_layers: vec![],
             collision_tiles: HashSet::new(),
+            interactive_objects: vec![],
         }
     }
     pub fn new(tiled_map: &Map) -> QomMap {
@@ -141,6 +119,21 @@ impl QomMap {
             index += 1;
         }
 
+        // Create interact-able objects
+        let object_layer = tiled_map
+            .get_object_group_by_name(&String::from(OBJECT_LAYER_NPCS_AND_INTERACTIONS))
+            .unwrap();
+        for object in &object_layer.objects {
+            let interactable_object = QomObject {
+                x: object.x as i32,
+                y: object.y as i32,
+                name: object.name.clone(),
+                object_type: object.obj_type.clone(),
+                image_id: object.gid,
+            };
+            qom_map.interactive_objects.push(interactable_object);
+        }
+
         portable_log!("x: {} to {}", qom_map.bounds.x1, qom_map.bounds.x2);
         portable_log!("y: {} to {}", qom_map.bounds.y1, qom_map.bounds.y2);
 
@@ -153,8 +146,13 @@ impl QomMap {
         images: &HashMap<u32, Image>,
         view_position: Vector,
     ) {
+        // Render world
         for layer in &self.render_layers {
             layer.render(window, images, view_position);
+        }
+        // Render interact-able objects
+        for object in &self.interactive_objects {
+            object.render(window, images, view_position);
         }
     }
 }
