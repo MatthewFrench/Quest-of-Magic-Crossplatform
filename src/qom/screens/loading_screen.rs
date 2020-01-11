@@ -1,3 +1,4 @@
+use crate::qom::qom_map::QomMap;
 use crate::qom::screens::world_screen::WorldScreen;
 use crate::qom::screens::Screen;
 use crate::qom::tiled::{parse, Map, Tileset};
@@ -112,8 +113,9 @@ impl Screen for LoadingScreen {
         if loading_progress.tileset_images_to_load > 0
             && images.len() == loading_progress.tileset_images_to_load as usize
         {
+            let map = self.map.as_ref().unwrap();
             // Put map into the game data
-            mem::swap(&mut self.map, &mut data.overworld_map);
+            mem::swap(&mut QomMap::new(&map), &mut data.overworld_map);
             // Put the images into the game data
             mem::swap(&mut self.images, &mut data.image_assets);
             // return transition to flip to next screen

@@ -11,15 +11,17 @@ use quicksilver::{
     lifecycle::{State, Window},
     Result,
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use crate::qom::qom_map::QomMap;
 
 pub mod screens;
 pub mod tiled;
 pub mod transitions;
+pub mod qom_map;
 
 pub struct QuestOfMagicData {
     /// All game data goes here
-    pub overworld_map: Option<Map>,
+    pub overworld_map: QomMap,
     // gid : image
     pub image_assets: HashMap<u32, Image>,
 }
@@ -54,7 +56,7 @@ impl State for QuestOfMagic {
     fn new() -> Result<QuestOfMagic> {
         let mut qom = QuestOfMagic {
             data: QuestOfMagicData {
-                overworld_map: None,
+                overworld_map: QomMap::empty(),
                 image_assets: HashMap::new(),
             },
             screen_stack: Vec::new(),
