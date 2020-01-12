@@ -23,7 +23,7 @@ impl QomLayer {
             let image = images.get(&tile);
             if let Some(image) = image {
                 window.draw(
-                    &image.area().with_center((
+                    &image.area().translate((
                         *x as f32 * TILE_WIDTH as f32 - view_position.x,
                         *y as f32 * TILE_HEIGHT as f32 - view_position.y,
                     )),

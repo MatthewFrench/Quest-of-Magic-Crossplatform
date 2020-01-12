@@ -5,6 +5,10 @@ use quicksilver::prelude::Shape;
 use quicksilver::prelude::{Image, Window};
 use std::collections::HashMap;
 
+// Object coordinates have the bottom-left of the image as 0,0. So subtract height.
+const OBJECT_WIDTH_OFFSET: f32 = 0.0;
+const OBJECT_HEIGHT_OFFSET: f32 = -TILE_HEIGHT as f32 * 1.0;
+
 pub struct QomObject {
     pub x: i32,
     pub y: i32,
@@ -25,9 +29,9 @@ impl QomObject {
             let image = images.get(&self.image_id);
             if let Some(image) = image {
                 window.draw(
-                    &image.area().with((
-                        self.x as f32 - view_position.x,
-                        self.y as f32 - view_position.y,
+                    &image.area().translate((
+                        self.x as f32 - view_position.x + OBJECT_WIDTH_OFFSET,
+                        self.y as f32 - view_position.y + OBJECT_HEIGHT_OFFSET,
                     )),
                     Img(image),
                 );

@@ -34,16 +34,16 @@ impl Screen for WorldScreen {
 
     fn update(&mut self, window: &mut Window, _data: &mut QuestOfMagicData) -> ScreenTransition {
         if window.keyboard()[Key::Left].is_down() {
-            self.view_position.x -= 1.0;
+            self.view_position.x -= 10.0;
         }
         if window.keyboard()[Key::Right].is_down() {
-            self.view_position.x += 1.0;
+            self.view_position.x += 10.0;
         }
         if window.keyboard()[Key::Down].is_down() {
-            self.view_position.y += 1.0;
+            self.view_position.y += 10.0;
         }
         if window.keyboard()[Key::Up].is_down() {
-            self.view_position.y -= 1.0;
+            self.view_position.y -= 10.0;
         }
         let view = Rectangle::new_sized((window.screen_size().x, window.screen_size().y));
         window.set_view(View::new(view));
