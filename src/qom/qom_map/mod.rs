@@ -1,6 +1,7 @@
 use crate::qom::qom_map::qom_layer::QomLayer;
-use crate::qom::qom_map::qom_object::QomObject;
+use crate::qom::qom_map::qom_object::{QomObject, QomUnknownObject};
 use crate::qom::tiled::Map;
+use crate::qom::utility::Bounds;
 use quicksilver::geom::Vector;
 use quicksilver::prelude::{Image, Window};
 use std::collections::{HashMap, HashSet};
@@ -18,18 +19,12 @@ const LAYER_ABOVE_GROUND_3: &str = "Above Ground 3";
 const LAYER_TILE_COLLISION_MAP: &str = "Tile Collision Map";
 const OBJECT_LAYER_NPCS_AND_INTERACTIONS: &str = "NPCs and Interactions";
 
-pub struct Bounds<T> {
-    x1: T,
-    y1: T,
-    x2: T,
-    y2: T,
-}
 pub struct QomMap {
     bounds: Bounds<i32>,
     render_layers: Vec<QomLayer>,
     collision_tiles: HashSet<(i32, i32)>,
     // todo: split into object types, signs/houses/npcs/entrances
-    interactive_objects: Vec<QomObject>,
+    interactive_objects: Vec<Box<dyn QomObject>>,
 }
 impl QomMap {
     pub fn empty() -> QomMap {
@@ -124,14 +119,16 @@ impl QomMap {
             .get_object_group_by_name(&String::from(OBJECT_LAYER_NPCS_AND_INTERACTIONS))
             .unwrap();
         for object in &object_layer.objects {
-            let interactable_object = QomObject {
+            let interactable_object = QomUnknownObject {
                 x: object.x as i32,
-                y: object.y as i32,
+                y: object.y as i32 - TILE_HEIGHT, // Objects are rendered using the bottom left corner as 0,0
                 name: object.name.clone(),
                 object_type: object.obj_type.clone(),
                 image_id: object.gid,
             };
-            qom_map.interactive_objects.push(interactable_object);
+            qom_map
+                .interactive_objects
+                .push(Box::new(interactable_object));
         }
 
         portable_log!("x: {} to {}", qom_map.bounds.x1, qom_map.bounds.x2);

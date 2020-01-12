@@ -2,6 +2,7 @@ extern crate quicksilver;
 
 use tiled::Map;
 
+use crate::qom::qom_map::QomMap;
 use crate::qom::screens::loading_screen::LoadingScreen;
 use crate::qom::screens::Screen;
 use crate::qom::transitions::ScreenTransition;
@@ -12,12 +13,12 @@ use quicksilver::{
     Result,
 };
 use std::collections::{HashMap, HashSet};
-use crate::qom::qom_map::QomMap;
 
+pub mod qom_map;
 pub mod screens;
 pub mod tiled;
 pub mod transitions;
-pub mod qom_map;
+pub mod utility;
 
 pub struct QuestOfMagicData {
     /// All game data goes here
