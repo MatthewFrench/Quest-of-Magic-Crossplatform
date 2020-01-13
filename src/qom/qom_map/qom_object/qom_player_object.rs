@@ -4,13 +4,13 @@ use quicksilver::prelude::Shape;
 use quicksilver::prelude::{Image, Window};
 use std::collections::HashMap;
 
-struct Player {
-    is_visible: bool,
-    x: f32,
-    y: f32,
-    image_id: u32,
+pub struct QomPlayerObject {
+    pub is_visible: bool,
+    pub x: f32,
+    pub y: f32,
+    pub image_id: u32,
 }
-impl Player {
+impl QomPlayerObject {
     pub fn render(
         &self,
         // todo: Window isn't required, drawables can be drawn directly to context

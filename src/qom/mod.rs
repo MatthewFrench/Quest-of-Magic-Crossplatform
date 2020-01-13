@@ -1,7 +1,5 @@
 extern crate quicksilver;
 
-use tiled::Map;
-
 use crate::qom::qom_map::QomMap;
 use crate::qom::screens::loading_screen::LoadingScreen;
 use crate::qom::screens::Screen;

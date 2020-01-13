@@ -1,5 +1,6 @@
 use crate::qom::qom_map::qom_layer::QomLayer;
-use crate::qom::qom_map::qom_object::{QomObject, QomUnknownObject};
+use crate::qom::qom_map::qom_object::qom_unknown_object::QomUnknownObject;
+use crate::qom::qom_map::qom_object::QomObject;
 use crate::qom::tiled::Map;
 use crate::qom::utility::Bounds;
 use quicksilver::geom::Vector;
@@ -8,6 +9,7 @@ use std::collections::{HashMap, HashSet};
 
 pub mod qom_layer;
 pub mod qom_object;
+pub mod qom_object_manager;
 
 const TILE_WIDTH: i32 = 44;
 const TILE_HEIGHT: i32 = 44;
@@ -115,6 +117,7 @@ impl QomMap {
         }
 
         // Create interact-able objects
+        // todo: Separate objects into types and add them to the object manager
         let object_layer = tiled_map
             .get_object_group_by_name(&String::from(OBJECT_LAYER_NPCS_AND_INTERACTIONS))
             .unwrap();
