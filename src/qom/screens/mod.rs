@@ -1,5 +1,5 @@
+use crate::qom::qom_data::QuestOfMagicData;
 use crate::qom::transitions::ScreenTransition;
-use crate::qom::QuestOfMagicData;
 use quicksilver::prelude::{Event, Window};
 
 pub mod loading_screen;

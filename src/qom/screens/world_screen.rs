@@ -1,6 +1,6 @@
+use crate::qom::qom_data::QuestOfMagicData;
 use crate::qom::screens::Screen;
 use crate::qom::transitions::ScreenTransition;
-use crate::qom::QuestOfMagicData;
 use quicksilver::geom::{Rectangle, Vector};
 use quicksilver::graphics::View;
 use quicksilver::input::Key;

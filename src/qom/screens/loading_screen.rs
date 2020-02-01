@@ -1,9 +1,9 @@
+use crate::qom::qom_data::QuestOfMagicData;
 use crate::qom::qom_map::QomMap;
 use crate::qom::screens::world_screen::WorldScreen;
 use crate::qom::screens::Screen;
 use crate::qom::tiled::{parse, Map, Tileset};
 use crate::qom::transitions::{ScreenTransition, TransitionEffect};
-use crate::qom::QuestOfMagicData;
 use quicksilver::geom::Rectangle;
 use quicksilver::graphics::Background::Col;
 use quicksilver::load_file;
