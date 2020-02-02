@@ -13,6 +13,7 @@ use quicksilver::{
 };
 use std::collections::{HashMap, HashSet};
 
+pub mod player_data;
 pub mod qom_data;
 pub mod qom_map;
 pub mod screens;

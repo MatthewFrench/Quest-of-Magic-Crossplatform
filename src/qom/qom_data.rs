@@ -7,4 +7,5 @@ pub struct QuestOfMagicData {
     pub overworld_map: QomMap,
     // gid : image
     pub image_assets: HashMap<u32, Image>,
+    pub player_data: PlayerData,
 }
