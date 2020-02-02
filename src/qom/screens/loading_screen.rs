@@ -60,15 +60,21 @@ impl Screen for LoadingScreen {
                         portable_log!("Got tileset!");
                         let tileset: &Tileset = tileset;
                         let mut current_gid = tileset.first_gid;
+                        portable_log!("Tileset first gid {}!", current_gid);
                         // Using first_gid, generate all the tile numbers
                         for tile in &tileset.tiles {
                             for image in &tile.images {
+                                let current_gid = tileset.first_gid + tile.id;
+                                portable_log!(
+                                    "Loading Gid {} and image name {}",
+                                    current_gid,
+                                    image.source.clone()
+                                );
                                 image_assets.push((
                                     current_gid,
                                     Asset::new(Image::load(image.source.clone())),
                                 ));
                             }
-                            current_gid += 1;
                         }
                     }
                     portable_log!("Images to load: {}", image_assets.len());
@@ -101,6 +107,7 @@ impl Screen for LoadingScreen {
                 // Append images that finish
                 for (source, image_asset) in image_assets {
                     image_asset.execute(|image| {
+                        portable_log!("Loaded image gid {}", source);
                         images.insert(source.to_owned(), image.to_owned());
                         Ok(())
                     })?;

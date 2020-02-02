@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 pub struct QomSignObject {
     pub is_visible: bool,
+    pub name: String,
     pub x: f32,
     pub y: f32,
     pub image_id: u32,
@@ -28,6 +29,8 @@ impl QomSignObject {
                     Img(image),
                 );
             }
+        } else {
+            portable_log!("Unable to find image with image id {}", self.image_id);
         }
     }
 }

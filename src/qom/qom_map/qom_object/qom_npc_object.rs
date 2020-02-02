@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 pub struct QomNpcObject {
     pub is_visible: bool,
+    pub name: String,
     pub x: f32,
     pub y: f32,
     pub image_id: u32,
@@ -27,6 +28,8 @@ impl QomNpcObject {
                         .translate((self.x - view_position.x, self.y - view_position.y)),
                     Img(image),
                 );
+            } else {
+                portable_log!("Unable to find image with image id {}", self.image_id);
             }
         }
     }

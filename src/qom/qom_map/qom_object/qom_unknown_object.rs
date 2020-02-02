@@ -32,6 +32,8 @@ impl QomObject for QomUnknownObject {
                     Img(image),
                 );
             }
+        } else {
+            portable_log!("Unable to find image with image id {}", self.image_id);
         }
     }
 }

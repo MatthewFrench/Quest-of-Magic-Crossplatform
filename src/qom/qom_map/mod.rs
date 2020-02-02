@@ -1,4 +1,8 @@
 use crate::qom::qom_map::qom_layer::QomLayer;
+use crate::qom::qom_map::qom_object::qom_entrance_object::QomEntranceObject;
+use crate::qom::qom_map::qom_object::qom_house_object::QomHouseObject;
+use crate::qom::qom_map::qom_object::qom_npc_object::QomNpcObject;
+use crate::qom::qom_map::qom_object::qom_sign_object::QomSignObject;
 use crate::qom::qom_map::qom_object::qom_unknown_object::QomUnknownObject;
 use crate::qom::qom_map::qom_object::QomObject;
 use crate::qom::tiled::Map;
@@ -25,8 +29,13 @@ pub struct QomMap {
     bounds: Bounds<i32>,
     render_layers: Vec<QomLayer>,
     collision_tiles: HashSet<(i32, i32)>,
-    // todo: split into object types, signs/houses/npcs/entrances
-    interactive_objects: Vec<Box<dyn QomObject>>,
+    // Interactive Objects
+    starting_positions: Vec<QomUnknownObject>,
+    npcs: Vec<QomNpcObject>,
+    signs: Vec<QomSignObject>,
+    entrances: Vec<QomEntranceObject>,
+    houses: Vec<QomHouseObject>,
+    unknown_objects: Vec<QomUnknownObject>,
 }
 impl QomMap {
     pub fn empty() -> QomMap {
@@ -39,7 +48,12 @@ impl QomMap {
             },
             render_layers: vec![],
             collision_tiles: HashSet::new(),
-            interactive_objects: vec![],
+            starting_positions: vec![],
+            npcs: vec![],
+            signs: vec![],
+            entrances: vec![],
+            houses: vec![],
+            unknown_objects: vec![],
         }
     }
     pub fn new(tiled_map: &Map) -> QomMap {
@@ -122,16 +136,85 @@ impl QomMap {
             .get_object_group_by_name(&String::from(OBJECT_LAYER_NPCS_AND_INTERACTIONS))
             .unwrap();
         for object in &object_layer.objects {
-            let interactable_object = QomUnknownObject {
-                x: object.x as i32,
-                y: object.y as i32 - TILE_HEIGHT, // Objects are rendered using the bottom left corner as 0,0
-                name: object.name.clone(),
-                object_type: object.obj_type.clone(),
-                image_id: object.gid,
-            };
-            qom_map
-                .interactive_objects
-                .push(Box::new(interactable_object));
+            // type - name
+            // start - human-start
+            // npc - town-elf-3
+            // npc - town-elf-2
+            // npc - town-elf-1
+            // npc - healer
+            // sign - elf-sign-1
+            // sign - dwarf-sign
+            // sign - starting-town-sign
+            // sign - elf-sign-2
+            // entrance - dwarf-keeep
+            // entrance - dwarf-outpost
+            // entrance - starting-cave
+            // house - starting-town-1
+            // house - starting-town-2
+            // house - starting-town-3
+            match (object.obj_type.as_str()) {
+                "start" => {
+                    let start_object = QomUnknownObject {
+                        x: object.x as i32,
+                        y: object.y as i32 - TILE_HEIGHT, // Objects are rendered using the bottom left corner as 0,0
+                        name: object.name.clone(),
+                        object_type: object.obj_type.clone(),
+                        image_id: object.gid,
+                    };
+                    qom_map.starting_positions.push(start_object);
+                }
+                "npc" => {
+                    let npc_object = QomNpcObject {
+                        is_visible: true,
+                        x: object.x,
+                        y: object.y - TILE_HEIGHT as f32, // Objects are rendered using the bottom left corner as 0,0
+                        name: object.name.clone(),
+                        //object_type: object.obj_type.clone(),
+                        image_id: object.gid,
+                    };
+                    qom_map.npcs.push(npc_object);
+                }
+                "sign" => {
+                    let sign = QomSignObject {
+                        is_visible: true,
+                        x: object.x,
+                        y: object.y - TILE_HEIGHT as f32, // Objects are rendered using the bottom left corner as 0,0
+                        name: object.name.clone(),
+                        image_id: object.gid,
+                    };
+                    qom_map.signs.push(sign);
+                }
+                "entrance" => {
+                    let entrance = QomEntranceObject {
+                        is_visible: true,
+                        x: object.x,
+                        y: object.y - TILE_HEIGHT as f32, // Objects are rendered using the bottom left corner as 0,0
+                        name: object.name.clone(),
+                        image_id: object.gid,
+                    };
+                    qom_map.entrances.push(entrance);
+                }
+                "house" => {
+                    let house = QomHouseObject {
+                        is_visible: true,
+                        x: object.x,
+                        y: object.y - TILE_HEIGHT as f32, // Objects are rendered using the bottom left corner as 0,0
+                        name: object.name.clone(),
+                        image_id: object.gid,
+                    };
+                    qom_map.houses.push(house);
+                }
+                _ => {
+                    let interactable_object = QomUnknownObject {
+                        x: object.x as i32,
+                        y: object.y as i32 - TILE_HEIGHT, // Objects are rendered using the bottom left corner as 0,0
+                        name: object.name.clone(),
+                        object_type: object.obj_type.clone(),
+                        image_id: object.gid,
+                    };
+                    qom_map.unknown_objects.push(interactable_object);
+                }
+            }
         }
 
         portable_log!("x: {} to {}", qom_map.bounds.x1, qom_map.bounds.x2);
@@ -150,8 +233,24 @@ impl QomMap {
         for layer in &self.render_layers {
             layer.render(window, images, view_position);
         }
-        // Render interact-able objects
-        for object in &self.interactive_objects {
+        // Render unknown objects
+        for object in &self.unknown_objects {
+            object.render(window, images, view_position);
+        }
+        // Render entrances
+        for object in &self.entrances {
+            object.render(window, images, view_position);
+        }
+        // Render houses
+        for object in &self.houses {
+            object.render(window, images, view_position);
+        }
+        // Render signs
+        for object in &self.signs {
+            object.render(window, images, view_position);
+        }
+        // Render npcs
+        for object in &self.npcs {
             object.render(window, images, view_position);
         }
     }
