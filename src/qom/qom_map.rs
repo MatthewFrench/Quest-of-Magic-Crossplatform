@@ -13,7 +13,6 @@ use std::collections::{HashMap, HashSet};
 
 pub mod qom_layer;
 pub mod qom_object;
-pub mod qom_object_manager;
 
 const TILE_WIDTH: i32 = 44;
 const TILE_HEIGHT: i32 = 44;
