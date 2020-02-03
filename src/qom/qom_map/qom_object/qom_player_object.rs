@@ -6,7 +6,7 @@ use quicksilver::prelude::{Image, Window};
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-const MOVEMENT_TIME_IN_SECONDS: f64 = 0.1;
+const MOVEMENT_TIME_IN_SECONDS: f64 = 0.2;
 
 pub struct QomPlayerObject {
     pub is_visible: bool,
@@ -69,7 +69,7 @@ impl QomPlayerObject {
             self.move_to_y = self.y + move_y_amount;
             self.end_movement_time_in_seconds = MOVEMENT_TIME_IN_SECONDS;
             self.start_move_instant = Instant::now();
-        } else if self.is_moving && same_direction && percentage > 0.95 {
+        } else if self.is_moving && same_direction && percentage > 0.995 {
             // Start on next movement command
             self.move_to_x += move_x_amount;
             self.move_to_y += move_y_amount;
