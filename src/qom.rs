@@ -1,6 +1,7 @@
 extern crate quicksilver;
 
 use crate::qom::qom_data::QuestOfMagicData;
+use crate::qom::qom_map::qom_object::qom_player_object::QomPlayerObject;
 use crate::qom::qom_map::QomMap;
 use crate::qom::screens::loading_screen::LoadingScreen;
 use crate::qom::screens::Screen;
@@ -12,8 +13,8 @@ use quicksilver::{
     Result,
 };
 use std::collections::{HashMap, HashSet};
+use std::time::Instant;
 
-pub mod player_data;
 pub mod qom_data;
 pub mod qom_map;
 pub mod screens;
@@ -53,6 +54,20 @@ impl State for QuestOfMagic {
             data: QuestOfMagicData {
                 overworld_map: QomMap::empty(),
                 image_assets: HashMap::new(),
+                player_data: QomPlayerObject {
+                    is_visible: true,
+                    name: "".parse().unwrap(),
+                    x: 0.0,
+                    y: 0.0,
+                    image_id: 0,
+                    is_moving: false,
+                    moving_starting_x: 0.0,
+                    moving_starting_y: 0.0,
+                    move_to_x: 0.0,
+                    move_to_y: 0.0,
+                    start_move_instant: Instant::now(),
+                    end_movement_time_in_seconds: 0.0,
+                },
             },
             screen_stack: Vec::new(),
         };

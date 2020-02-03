@@ -14,8 +14,8 @@ use std::collections::{HashMap, HashSet};
 pub mod qom_layer;
 pub mod qom_object;
 
-const TILE_WIDTH: i32 = 44;
-const TILE_HEIGHT: i32 = 44;
+pub(crate) const TILE_WIDTH: i32 = 44;
+pub(crate) const TILE_HEIGHT: i32 = 44;
 const LAYER_GROUND_1: &str = "Ground 1";
 const LAYER_GROUND_2: &str = "Ground 2";
 const LAYER_ABOVE_GROUND_1: &str = "Above Ground 1";
@@ -221,6 +221,11 @@ impl QomMap {
 
         return qom_map;
     }
+
+    pub fn get_human_start(&self) -> &QomUnknownObject {
+        return self.starting_positions.get(0).unwrap();
+    }
+
     pub fn render(
         &self,
         // todo: Window isn't required, drawables can be drawn directly to context

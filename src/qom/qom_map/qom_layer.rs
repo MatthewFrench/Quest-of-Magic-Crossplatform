@@ -20,15 +20,17 @@ impl QomLayer {
         view_position: Vector,
     ) {
         for ((x, y), tile) in &self.tiles {
-            let image = images.get(&tile);
-            if let Some(image) = image {
-                window.draw(
-                    &image.area().translate((
-                        *x as f32 * TILE_WIDTH as f32 - view_position.x,
-                        *y as f32 * TILE_HEIGHT as f32 - view_position.y,
-                    )),
-                    Img(image),
-                );
+            let render_x = *x as f32 * TILE_WIDTH as f32 - view_position.x;
+            let render_y = *y as f32 * TILE_HEIGHT as f32 - view_position.y;
+            if render_x > (0 - TILE_WIDTH) as f32
+                && render_y > (0 - TILE_HEIGHT) as f32
+                && render_x < window.screen_size().x
+                && render_y < window.screen_size().y
+            {
+                let image = images.get(&tile);
+                if let Some(image) = image {
+                    window.draw(&image.area().translate((render_x, render_y)), Img(image));
+                }
             }
         }
     }
