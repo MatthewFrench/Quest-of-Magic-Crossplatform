@@ -8,6 +8,8 @@ use std::time::{Duration, Instant};
 
 const MOVEMENT_TIME_IN_SECONDS: f64 = 0.2;
 
+// Todo: Change movement storing to tiles instead of pixels so we don't have to divide to get tile number
+
 pub struct QomPlayerObject {
     pub is_visible: bool,
     pub name: String,
@@ -62,6 +64,8 @@ impl QomPlayerObject {
         };
         let same_direction = x_direction == old_x_direction && y_direction == old_y_direction;
         if !self.is_moving {
+            // Todo Determine if next area is blocked by collisions
+
             self.is_moving = true;
             self.moving_starting_x = self.x;
             self.moving_starting_y = self.y;
@@ -70,6 +74,8 @@ impl QomPlayerObject {
             self.end_movement_time_in_seconds = MOVEMENT_TIME_IN_SECONDS;
             self.start_move_instant = Instant::now();
         } else if self.is_moving && same_direction && percentage > 0.995 {
+            // Todo Determine if next area is blocked by collisions
+
             // Start on next movement command
             self.move_to_x += move_x_amount;
             self.move_to_y += move_y_amount;
