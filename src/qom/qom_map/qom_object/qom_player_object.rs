@@ -21,6 +21,8 @@ pub enum MoveDirection {
     None,
 }
 
+// Todo: Queue a movement direction instead of queueing a player move to tile
+
 pub struct MovementCommand {
     moving_start_tile: Point2<f32>,
     move_to_tile: Point2<f32>,
