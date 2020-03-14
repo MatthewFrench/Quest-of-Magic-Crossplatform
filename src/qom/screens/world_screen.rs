@@ -110,7 +110,7 @@ impl Screen for WorldScreen {
             KEYBOARD_DOWN => data.player_data.move_direction(MoveDirection::Down),
             KEYBOARD_LEFT => data.player_data.move_direction(MoveDirection::Left),
             KEYBOARD_RIGHT => data.player_data.move_direction(MoveDirection::Right),
-            _ => (),
+            _ => data.player_data.move_direction(MoveDirection::None),
         }
         data.player_data.update();
 

@@ -18,6 +18,7 @@ pub enum MoveDirection {
     DownLeft,
     UpRight,
     DownRight,
+    None,
 }
 
 pub struct MovementCommand {
@@ -76,6 +77,9 @@ impl QomPlayerObject {
             });
         }
     }
+    fn cancel_next_movement_command(&mut self) {
+        // Todo, cancel next movement command assuming it is from the player
+    }
     pub fn move_direction(&mut self, direction: MoveDirection) {
         let mut move_to: Point2<f32> = match direction {
             MoveDirection::Left => Point2::new(-1.0, 0.0),
@@ -86,12 +90,17 @@ impl QomPlayerObject {
             MoveDirection::DownLeft => Point2::new(-1.0, 1.0),
             MoveDirection::UpRight => Point2::new(1.0, -1.0),
             MoveDirection::DownRight => Point2::new(1.0, 1.0),
+            MoveDirection::None => Point2::new(0.0, 0.0),
         };
-        move_to = Point2::new(
-            (move_to.x + self.tile_position.x).round(),
-            (move_to.y + self.tile_position.y).round(),
-        );
-        self.move_to(move_to);
+        if move_to.x == 0.0 && move_to.y == 0.0 {
+            self.cancel_next_movement_command();
+        } else {
+            move_to = Point2::new(
+                (move_to.x + self.tile_position.x).round(),
+                (move_to.y + self.tile_position.y).round(),
+            );
+            self.move_to(move_to);
+        }
 
         /*
         if self.is_moving() {
