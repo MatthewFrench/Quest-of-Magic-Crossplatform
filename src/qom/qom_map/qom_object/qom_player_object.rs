@@ -1,4 +1,5 @@
 use crate::qom::qom_map::{TILE_HEIGHT, TILE_WIDTH};
+use nalgebra::Point2;
 use quicksilver::geom::Vector;
 use quicksilver::graphics::Background::Img;
 use quicksilver::prelude::Shape;
@@ -6,34 +7,99 @@ use quicksilver::prelude::{Image, Window};
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
-const MOVEMENT_TIME_IN_SECONDS: f64 = 0.2;
+const TILE_MOVE_TIME_IN_SECONDS: f64 = 0.2;
 
-// Todo: Change movement storing to tiles instead of pixels so we don't have to divide to get tile number
+pub enum MoveDirection {
+    Left,
+    Right,
+    Up,
+    Down,
+    UpLeft,
+    DownLeft,
+    UpRight,
+    DownRight,
+}
+
+pub struct MovementCommand {
+    moving_start_tile: Point2<f32>,
+    move_to_tile: Point2<f32>,
+    transition_total_time: f64,
+    transition_start: Instant,
+    ease_out: bool,
+    ease_in: bool,
+}
 
 pub struct QomPlayerObject {
-    pub is_visible: bool,
-    pub name: String,
-    pub x: f32,
-    pub y: f32,
-    pub image_id: u32,
+    is_visible: bool,
+    name: String,
+    tile_position: Point2<f32>,
+    image_id: u32,
     // Tracks if the character is moving
-    pub is_moving: bool,
-    pub moving_starting_x: f32,
-    pub moving_starting_y: f32,
-    pub move_to_x: f32,
-    pub move_to_y: f32,
-    pub end_movement_time_in_seconds: f64,
-    pub start_move_instant: Instant,
+    movement_commands: Vec<MovementCommand>,
+}
+impl Default for QomPlayerObject {
+    fn default() -> QomPlayerObject {
+        QomPlayerObject {
+            is_visible: true,
+            name: "".parse().unwrap(),
+            tile_position: Point2::new(0.0, 0.0),
+            image_id: 0,
+            movement_commands: vec![],
+        }
+    }
 }
 impl QomPlayerObject {
-    /**
-    Track player movement. Move by a set amount with a set speed. Only move if not previously moving.
-    In a future iteration, might make better movement chaining.
-    */
-    pub fn move_amount(&mut self, move_x_amount: f32, move_y_amount: f32) {
-        let elapsed_duration = self.start_move_instant.elapsed();
-        // Percentage can likely be ease-in ease-out using trigonometry of some sort
-        let mut percentage = elapsed_duration.as_secs_f64() / self.end_movement_time_in_seconds;
+    pub fn new() -> QomPlayerObject {
+        QomPlayerObject {
+            ..Default::default()
+        }
+    }
+    pub fn set_image_id(&mut self, image_id: u32) {
+        self.image_id = image_id;
+    }
+    pub fn set_tile_position(&mut self, position: Point2<f32>) {
+        self.movement_commands.clear();
+        self.tile_position = position.clone();
+    }
+    fn is_moving(&self) -> bool {
+        self.movement_commands.len() > 0
+    }
+    fn move_to(&mut self, to_tile: Point2<f32>) {
+        if self.movement_commands.len() == 0 {
+            self.movement_commands.push(MovementCommand {
+                moving_start_tile: self.tile_position.clone(),
+                move_to_tile: to_tile,
+                transition_total_time: TILE_MOVE_TIME_IN_SECONDS,
+                transition_start: Instant::now(),
+                ease_out: false,
+                ease_in: false,
+            });
+        }
+    }
+    pub fn move_direction(&mut self, direction: MoveDirection) {
+        let mut move_to: Point2<f32> = match direction {
+            MoveDirection::Left => Point2::new(-1.0, 0.0),
+            MoveDirection::Right => Point2::new(1.0, 0.0),
+            MoveDirection::Up => Point2::new(0.0, -1.0),
+            MoveDirection::Down => Point2::new(0.0, 1.0),
+            MoveDirection::UpLeft => Point2::new(-1.0, -1.0),
+            MoveDirection::DownLeft => Point2::new(-1.0, 1.0),
+            MoveDirection::UpRight => Point2::new(1.0, -1.0),
+            MoveDirection::DownRight => Point2::new(1.0, 1.0),
+        };
+        move_to = Point2::new(
+            (move_to.x + self.tile_position.x).round(),
+            (move_to.y + self.tile_position.y).round(),
+        );
+        self.move_to(move_to);
+
+        /*
+        if self.is_moving() {
+
+        } else {
+
+        }
+
         let x_direction = if move_x_amount > 0.0 {
             1
         } else if move_x_amount < 0.0 {
@@ -63,6 +129,10 @@ impl QomPlayerObject {
             0
         };
         let same_direction = x_direction == old_x_direction && y_direction == old_y_direction;
+
+        let elapsed_duration = self.transition_start.elapsed();
+        // Percentage can likely be ease-in ease-out using trigonometry of some sort
+        let mut percentage = elapsed_duration.as_secs_f64() / self.transition_total_time;
         if !self.is_moving {
             // Todo Determine if next area is blocked by collisions
 
@@ -71,37 +141,46 @@ impl QomPlayerObject {
             self.moving_starting_y = self.y;
             self.move_to_x = self.x + move_x_amount;
             self.move_to_y = self.y + move_y_amount;
-            self.end_movement_time_in_seconds = MOVEMENT_TIME_IN_SECONDS;
-            self.start_move_instant = Instant::now();
+            self.transition_total_time = TILE_MOVE_TIME_IN_SECONDS;
+            self.transition_start = Instant::now();
         } else if self.is_moving && same_direction && percentage > 0.995 {
             // Todo Determine if next area is blocked by collisions
 
             // Start on next movement command
             self.move_to_x += move_x_amount;
             self.move_to_y += move_y_amount;
-            self.end_movement_time_in_seconds += MOVEMENT_TIME_IN_SECONDS;
+            self.transition_total_time += TILE_MOVE_TIME_IN_SECONDS;
         }
+        */
     }
     /**
     Move character if moving.
     */
     pub fn update(&mut self) {
-        if self.is_moving {
-            let elapsed_duration = self.start_move_instant.elapsed();
+        if self.is_moving() {
+            let command = self.movement_commands.first_mut().unwrap();
+            let elapsed_duration = command.transition_start.elapsed();
             // Percentage can likely be ease-in ease-out using trigonometry of some sort
-            let mut percentage = elapsed_duration.as_secs_f64() / self.end_movement_time_in_seconds;
+            let mut percentage = elapsed_duration.as_secs_f64() / command.transition_total_time;
             if percentage >= 1.0 {
                 percentage = 1.0;
-                self.is_moving = false;
-                self.x = self.move_to_x;
-                self.y = self.move_to_y;
+                self.tile_position = command.move_to_tile.clone();
+                self.movement_commands.remove(0);
             } else {
-                self.x = (self.move_to_x - self.moving_starting_x) * percentage as f32
-                    + self.moving_starting_x;
-                self.y = (self.move_to_y - self.moving_starting_y) * percentage as f32
-                    + self.moving_starting_y;
+                self.tile_position = Point2::new(
+                    (command.move_to_tile.x - command.moving_start_tile.x) * percentage as f32
+                        + command.moving_start_tile.x,
+                    (command.move_to_tile.y - command.moving_start_tile.y) * percentage as f32
+                        + command.moving_start_tile.y,
+                );
             }
         }
+    }
+    pub fn get_pixel_x(&self) -> f32 {
+        self.tile_position.x * TILE_WIDTH as f32
+    }
+    pub fn get_pixel_y(&self) -> f32 {
+        self.tile_position.y * TILE_HEIGHT as f32
     }
     pub fn render(
         &self,
@@ -114,9 +193,10 @@ impl QomPlayerObject {
             let image = images.get(&self.image_id);
             if let Some(image) = image {
                 window.draw(
-                    &image
-                        .area()
-                        .translate((self.x - view_position.x, self.y - view_position.y)),
+                    &image.area().translate((
+                        self.get_pixel_x() - view_position.x,
+                        self.get_pixel_y() - view_position.y,
+                    )),
                     Img(image),
                 );
             }
