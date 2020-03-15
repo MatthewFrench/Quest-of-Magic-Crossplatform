@@ -4,14 +4,13 @@ use quicksilver::geom::Vector;
 use quicksilver::graphics::Background::Img;
 use quicksilver::prelude::Shape;
 use quicksilver::prelude::{Image, Window};
-use std::cmp::max;
 use std::collections::HashMap;
+use std::f32::consts::FRAC_1_SQRT_2;
 use std::time::{Duration, Instant};
 
-const PIXEL_MOVE_SPEED_PER_SECOND_MAX_SPEED: f32 = TILE_WIDTH as f32 * 4.0;
-const PIXEL_MOVE_SPEED_PER_SECOND_MIN_SPEED: f32 = PIXEL_MOVE_SPEED_PER_SECOND_MAX_SPEED / 4.0;
-const PLAYER_ACCELERATION_SPEED: f32 =
-    (PIXEL_MOVE_SPEED_PER_SECOND_MAX_SPEED - PIXEL_MOVE_SPEED_PER_SECOND_MIN_SPEED) / 60.0;
+const PIXEL_MOVE_SPEED_PER_SECOND_MAX_SPEED: f32 = TILE_WIDTH as f32 * 10.0;
+const PIXEL_MOVE_SPEED_PER_SECOND_MIN_SPEED: f32 = TILE_WIDTH as f32 * 1.5;
+const PLAYER_ACCELERATION_SPEED: f32 = (TILE_WIDTH as f32) / 30.0;
 
 #[derive(PartialEq, Eq, Clone)]
 pub enum MoveDirection {
@@ -75,15 +74,44 @@ impl QomPlayerObject {
             MoveDirection::Right => Point2::new(1.0, 0.0),
             MoveDirection::Up => Point2::new(0.0, -1.0),
             MoveDirection::Down => Point2::new(0.0, 1.0),
-            MoveDirection::UpLeft => Point2::new(-1.0, -1.0),
-            MoveDirection::DownLeft => Point2::new(-1.0, 1.0),
-            MoveDirection::UpRight => Point2::new(1.0, -1.0),
-            MoveDirection::DownRight => Point2::new(1.0, 1.0),
+            MoveDirection::UpLeft => Point2::new(-FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
+            MoveDirection::DownLeft => Point2::new(-FRAC_1_SQRT_2, FRAC_1_SQRT_2),
+            MoveDirection::UpRight => Point2::new(FRAC_1_SQRT_2, -FRAC_1_SQRT_2),
+            MoveDirection::DownRight => Point2::new(FRAC_1_SQRT_2, FRAC_1_SQRT_2),
             MoveDirection::None => Point2::new(0.0, 0.0),
         };
-        // Todo: Change if complete direction change, make 0, if half direction change, cut speed in half
         if self.previous_moved_direction != self.current_desired_direction {
-            self.current_direction_speed = 0.0;
+            let reduction_factor = match (
+                self.previous_moved_direction.clone(),
+                self.current_desired_direction.clone(),
+            ) {
+                (MoveDirection::Left, MoveDirection::DownLeft)
+                | (MoveDirection::DownLeft, MoveDirection::Down)
+                | (MoveDirection::Down, MoveDirection::DownRight)
+                | (MoveDirection::DownRight, MoveDirection::Right)
+                | (MoveDirection::Right, MoveDirection::UpRight)
+                | (MoveDirection::UpRight, MoveDirection::Up)
+                | (MoveDirection::Up, MoveDirection::UpLeft)
+                | (MoveDirection::UpLeft, MoveDirection::Left)
+                | (MoveDirection::Left, MoveDirection::UpLeft)
+                | (MoveDirection::UpLeft, MoveDirection::Up)
+                | (MoveDirection::Up, MoveDirection::UpRight)
+                | (MoveDirection::UpRight, MoveDirection::Right)
+                | (MoveDirection::Right, MoveDirection::DownRight)
+                | (MoveDirection::DownRight, MoveDirection::Down)
+                | (MoveDirection::Down, MoveDirection::DownLeft)
+                | (MoveDirection::DownLeft, MoveDirection::Left) => FRAC_1_SQRT_2,
+                (MoveDirection::Left, MoveDirection::Down)
+                | (MoveDirection::Down, MoveDirection::Right)
+                | (MoveDirection::Right, MoveDirection::Up)
+                | (MoveDirection::Up, MoveDirection::Left)
+                | (MoveDirection::Left, MoveDirection::Up)
+                | (MoveDirection::Up, MoveDirection::Right)
+                | (MoveDirection::Right, MoveDirection::Down)
+                | (MoveDirection::Down, MoveDirection::Left) => 0.5,
+                _ => 0.0,
+            };
+            self.current_direction_speed *= reduction_factor;
         }
         self.previous_moved_direction = self.current_desired_direction.clone();
         if move_to.x != 0.0 || move_to.y != 0.0 {
