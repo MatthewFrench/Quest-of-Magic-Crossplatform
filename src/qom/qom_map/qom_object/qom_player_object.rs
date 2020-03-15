@@ -9,8 +9,9 @@ use std::f32::consts::FRAC_1_SQRT_2;
 use std::time::{Duration, Instant};
 
 const PIXEL_MOVE_SPEED_PER_SECOND_MAX_SPEED: f32 = TILE_WIDTH as f32 * 10.0;
-const PIXEL_MOVE_SPEED_PER_SECOND_MIN_SPEED: f32 = TILE_WIDTH as f32 * 1.5;
-const PLAYER_ACCELERATION_SPEED: f32 = (TILE_WIDTH as f32) / 30.0;
+const PIXEL_MOVE_SPEED_PER_SECOND_MIN_SPEED: f32 = TILE_WIDTH as f32 * 2.0;
+const PIXEL_REALIGNMENT_SPEED_PER_SECOND: f32 = TILE_WIDTH as f32;
+const PLAYER_ACCELERATION_SPEED: f32 = (TILE_WIDTH as f32) / 45.0;
 
 #[derive(PartialEq, Eq, Clone)]
 pub enum MoveDirection {
@@ -57,10 +58,8 @@ impl QomPlayerObject {
         self.image_id = image_id;
     }
     pub fn set_tile_position(&mut self, position: Point2<f32>) {
-        self.pixel_position = Point2::new(
-            position.x * TILE_WIDTH as f32,
-            position.y * TILE_HEIGHT as f32,
-        );
+        self.pixel_position.x = position.x * TILE_WIDTH as f32;
+        self.pixel_position.y = position.y * TILE_HEIGHT as f32;
     }
     pub fn move_direction(&mut self, direction: MoveDirection) {
         self.current_desired_direction = direction;
@@ -69,6 +68,11 @@ impl QomPlayerObject {
     Move character if moving.
     */
     pub fn update(&mut self) {
+        // Todo: Track time since last update to move the player a delta amount
+
+        // Todo: If a player taps a movement key, move to the next tile.
+
+        // Convert direction to vector
         let mut move_to: Point2<f32> = match self.current_desired_direction {
             MoveDirection::Left => Point2::new(-1.0, 0.0),
             MoveDirection::Right => Point2::new(1.0, 0.0),
@@ -80,7 +84,10 @@ impl QomPlayerObject {
             MoveDirection::DownRight => Point2::new(FRAC_1_SQRT_2, FRAC_1_SQRT_2),
             MoveDirection::None => Point2::new(0.0, 0.0),
         };
-        if self.previous_moved_direction != self.current_desired_direction {
+        // Reduce speed on turns
+        if self.previous_moved_direction != self.current_desired_direction
+            && !(move_to.x == 0.0 && move_to.y == 0.0)
+        {
             let reduction_factor = match (
                 self.previous_moved_direction.clone(),
                 self.current_desired_direction.clone(),
@@ -114,6 +121,7 @@ impl QomPlayerObject {
             self.current_direction_speed *= reduction_factor;
         }
         self.previous_moved_direction = self.current_desired_direction.clone();
+        // Increase speed and move player
         if move_to.x != 0.0 || move_to.y != 0.0 {
             self.current_direction_speed += PLAYER_ACCELERATION_SPEED;
             self.current_direction_speed = self
@@ -122,13 +130,37 @@ impl QomPlayerObject {
             self.current_direction_speed = self
                 .current_direction_speed
                 .min(PIXEL_MOVE_SPEED_PER_SECOND_MAX_SPEED);
-            move_to = Point2::new(
-                move_to.x * self.current_direction_speed / 60.0 + self.pixel_position.x,
-                move_to.y * self.current_direction_speed / 60.0 + self.pixel_position.y,
-            );
-            self.pixel_position = move_to;
+            self.pixel_position.x += move_to.x * self.current_direction_speed / 60.0;
+            self.pixel_position.y += move_to.y * self.current_direction_speed / 60.0;
         } else {
             self.current_direction_speed = 0.0;
+        }
+        // Center the player on the tile if not moving
+        if move_to.x == 0.0 {
+            // Todo split tile -> pixel and pixel -> tile conversion into utility functions
+            let current_tile_x_pixel_position = (self.get_tile_x() * TILE_WIDTH) as f32;
+            if (self.pixel_position.x - current_tile_x_pixel_position as f32).abs()
+                < PIXEL_REALIGNMENT_SPEED_PER_SECOND / 60.0
+            {
+                self.pixel_position.x = current_tile_x_pixel_position;
+            } else if self.pixel_position.x > current_tile_x_pixel_position {
+                self.pixel_position.x -= PIXEL_REALIGNMENT_SPEED_PER_SECOND / 60.0;
+            } else if self.pixel_position.x < current_tile_x_pixel_position {
+                self.pixel_position.x += PIXEL_REALIGNMENT_SPEED_PER_SECOND / 60.0;
+            }
+        }
+        if move_to.y == 0.0 {
+            // Todo split tile -> pixel and pixel -> tile conversion into utility functions
+            let current_tile_y_pixel_position = (self.get_tile_y() * TILE_HEIGHT) as f32;
+            if (self.pixel_position.y - current_tile_y_pixel_position as f32).abs()
+                < PIXEL_REALIGNMENT_SPEED_PER_SECOND / 60.0
+            {
+                self.pixel_position.y = current_tile_y_pixel_position;
+            } else if self.pixel_position.y > current_tile_y_pixel_position {
+                self.pixel_position.y -= PIXEL_REALIGNMENT_SPEED_PER_SECOND / 60.0;
+            } else if self.pixel_position.y < current_tile_y_pixel_position {
+                self.pixel_position.y += PIXEL_REALIGNMENT_SPEED_PER_SECOND / 60.0;
+            }
         }
     }
     pub fn get_pixel_x(&self) -> f32 {
@@ -136,6 +168,18 @@ impl QomPlayerObject {
     }
     pub fn get_pixel_y(&self) -> f32 {
         self.pixel_position.y
+    }
+    fn get_tile_x_fraction(&self) -> f32 {
+        self.get_pixel_x() / TILE_WIDTH as f32
+    }
+    pub fn get_tile_x(&self) -> i32 {
+        (self.get_tile_x_fraction()).round() as i32
+    }
+    fn get_tile_y_fraction(&self) -> f32 {
+        self.get_pixel_y() / TILE_HEIGHT as f32
+    }
+    pub fn get_tile_y(&self) -> i32 {
+        (self.get_tile_y_fraction()).round() as i32
     }
     pub fn render(
         &self,
