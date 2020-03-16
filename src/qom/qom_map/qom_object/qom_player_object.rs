@@ -136,7 +136,7 @@ impl QomPlayerObject {
             self.current_direction_speed = 0.0;
         }
         // Center the player on the tile if not moving
-        if move_to.x == 0.0 {
+        if move_to.x == 0.0 && move_to.y != 0.0 {
             // Todo split tile -> pixel and pixel -> tile conversion into utility functions
             let current_tile_x_pixel_position = (self.get_tile_x() * TILE_WIDTH) as f32;
             if (self.pixel_position.x - current_tile_x_pixel_position as f32).abs()
@@ -149,7 +149,7 @@ impl QomPlayerObject {
                 self.pixel_position.x += PIXEL_REALIGNMENT_SPEED_PER_SECOND / 60.0;
             }
         }
-        if move_to.y == 0.0 {
+        if move_to.y == 0.0 && move_to.x != 0.0 {
             // Todo split tile -> pixel and pixel -> tile conversion into utility functions
             let current_tile_y_pixel_position = (self.get_tile_y() * TILE_HEIGHT) as f32;
             if (self.pixel_position.y - current_tile_y_pixel_position as f32).abs()
