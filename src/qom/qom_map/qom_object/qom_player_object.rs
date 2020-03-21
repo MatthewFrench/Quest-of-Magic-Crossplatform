@@ -10,9 +10,9 @@ use std::f32::consts::FRAC_1_SQRT_2;
 use std::time::{Duration, Instant};
 
 const PIXEL_MOVE_SPEED_PER_SECOND_MAX_SPEED: f32 = TILE_WIDTH as f32 * 10.0;
-const PIXEL_MOVE_SPEED_PER_SECOND_MIN_SPEED: f32 = TILE_WIDTH as f32 * 2.0;
+const PIXEL_MOVE_SPEED_PER_SECOND_MIN_SPEED: f32 = TILE_WIDTH as f32 * 2.5;
 const PIXEL_REALIGNMENT_SPEED_PER_SECOND: f32 = TILE_WIDTH as f32;
-const PLAYER_ACCELERATION_SPEED: f32 = (TILE_WIDTH as f32) / 45.0;
+const PLAYER_ACCELERATION_SPEED: f32 = (TILE_WIDTH as f32) / 30.0;
 
 #[derive(PartialEq, Eq, Clone)]
 pub enum MoveDirection {
@@ -67,31 +67,36 @@ impl QomPlayerObject {
     pub fn move_direction(&mut self, direction: MoveDirection) {
         self.current_desired_direction = direction;
     }
+    // Todo: Move tile collision padding constants to their own variables
     fn can_move_to_x_position(&mut self, map: &QomMap, x: f32) -> bool {
-        let y1_tile = self.get_tile_y_fraction().floor() as i32;
-        let y2_tile = self.get_tile_y_fraction().ceil() as i32;
-        // Collision is a rectangle so we have to check both sides
-        // In the future this could contain movement direction
-        let x1_tile = (x / TILE_WIDTH as f32).floor() as i32;
-        let x2_tile = (x / TILE_WIDTH as f32).ceil() as i32;
+        let x1_tile = (x / TILE_WIDTH as f32 + 0.2).floor() as i32;
+        let x2_tile = (x / TILE_WIDTH as f32 - 0.2).ceil() as i32;
+        let y1_tile = (self.get_tile_y_fraction() + 0.1).floor() as i32;
+        let y2_tile = (self.get_tile_y_fraction() - 0.1).ceil() as i32;
         return !map.collision_tiles.contains(&(x1_tile, y1_tile))
-            && !map.collision_tiles.contains(&(x2_tile, y2_tile));
+            && !map.collision_tiles.contains(&(x2_tile, y2_tile))
+            && !map.collision_tiles.contains(&(x2_tile, y1_tile))
+            && !map.collision_tiles.contains(&(x1_tile, y2_tile));
     }
     fn can_move_to_y_position(&mut self, map: &QomMap, y: f32) -> bool {
-        let x1_tile = self.get_tile_x_fraction().floor() as i32;
-        let x2_tile = self.get_tile_x_fraction().ceil() as i32;
-        let y1_tile = (y / TILE_HEIGHT as f32).floor() as i32;
-        let y2_tile = (y / TILE_HEIGHT as f32).ceil() as i32;
+        let x1_tile = (self.get_tile_x_fraction() + 0.2).floor() as i32;
+        let x2_tile = (self.get_tile_x_fraction() - 0.2).ceil() as i32;
+        let y1_tile = (y / TILE_HEIGHT as f32 + 0.1).floor() as i32;
+        let y2_tile = (y / TILE_HEIGHT as f32 - 0.1).ceil() as i32;
         return !map.collision_tiles.contains(&(x1_tile, y1_tile))
-            && !map.collision_tiles.contains(&(x2_tile, y2_tile));
+            && !map.collision_tiles.contains(&(x2_tile, y2_tile))
+            && !map.collision_tiles.contains(&(x2_tile, y1_tile))
+            && !map.collision_tiles.contains(&(x1_tile, y2_tile));
     }
     fn can_move_to_x_y_position(&mut self, map: &QomMap, x: f32, y: f32) -> bool {
-        let x1_tile = (x / TILE_WIDTH as f32).floor() as i32;
-        let x2_tile = (x / TILE_WIDTH as f32).ceil() as i32;
-        let y1_tile = (y / TILE_HEIGHT as f32).floor() as i32;
-        let y2_tile = (y / TILE_HEIGHT as f32).ceil() as i32;
+        let x1_tile = (x / TILE_WIDTH as f32 + 0.2).floor() as i32;
+        let x2_tile = (x / TILE_WIDTH as f32 - 0.2).ceil() as i32;
+        let y1_tile = (y / TILE_HEIGHT as f32 + 0.1).floor() as i32;
+        let y2_tile = (y / TILE_HEIGHT as f32 - 0.1).ceil() as i32;
         return !map.collision_tiles.contains(&(x1_tile, y1_tile))
-            && !map.collision_tiles.contains(&(x2_tile, y2_tile));
+            && !map.collision_tiles.contains(&(x2_tile, y2_tile))
+            && !map.collision_tiles.contains(&(x2_tile, y1_tile))
+            && !map.collision_tiles.contains(&(x1_tile, y2_tile));
     }
     /**
     Move character if moving.
