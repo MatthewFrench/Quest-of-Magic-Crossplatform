@@ -112,7 +112,7 @@ impl Screen for WorldScreen {
             KEYBOARD_RIGHT => data.player_data.move_direction(MoveDirection::Right),
             _ => data.player_data.move_direction(MoveDirection::None),
         }
-        data.player_data.update();
+        data.player_data.update(&data.overworld_map);
 
         let view = Rectangle::new_sized((window.screen_size().x, window.screen_size().y));
         window.set_view(View::new(view));

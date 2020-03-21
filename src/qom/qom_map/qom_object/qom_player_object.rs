@@ -1,4 +1,5 @@
-use crate::qom::qom_map::{TILE_HEIGHT, TILE_WIDTH};
+use crate::qom::qom_data::QuestOfMagicData;
+use crate::qom::qom_map::{QomMap, TILE_HEIGHT, TILE_WIDTH};
 use nalgebra::Point2;
 use quicksilver::geom::Vector;
 use quicksilver::graphics::Background::Img;
@@ -25,6 +26,8 @@ pub enum MoveDirection {
     DownRight,
     None,
 }
+
+// Todo: Switch everything to f64
 
 pub struct QomPlayerObject {
     is_visible: bool,
@@ -64,16 +67,42 @@ impl QomPlayerObject {
     pub fn move_direction(&mut self, direction: MoveDirection) {
         self.current_desired_direction = direction;
     }
+    fn can_move_to_x_position(&mut self, map: &QomMap, x: f32) -> bool {
+        let y1_tile = self.get_tile_y_fraction().floor() as i32;
+        let y2_tile = self.get_tile_y_fraction().ceil() as i32;
+        // Collision is a rectangle so we have to check both sides
+        // In the future this could contain movement direction
+        let x1_tile = (x / TILE_WIDTH as f32).floor() as i32;
+        let x2_tile = (x / TILE_WIDTH as f32).ceil() as i32;
+        return !map.collision_tiles.contains(&(x1_tile, y1_tile))
+            && !map.collision_tiles.contains(&(x2_tile, y2_tile));
+    }
+    fn can_move_to_y_position(&mut self, map: &QomMap, y: f32) -> bool {
+        let x1_tile = self.get_tile_x_fraction().floor() as i32;
+        let x2_tile = self.get_tile_x_fraction().ceil() as i32;
+        let y1_tile = (y / TILE_HEIGHT as f32).floor() as i32;
+        let y2_tile = (y / TILE_HEIGHT as f32).ceil() as i32;
+        return !map.collision_tiles.contains(&(x1_tile, y1_tile))
+            && !map.collision_tiles.contains(&(x2_tile, y2_tile));
+    }
+    fn can_move_to_x_y_position(&mut self, map: &QomMap, x: f32, y: f32) -> bool {
+        let x1_tile = (x / TILE_WIDTH as f32).floor() as i32;
+        let x2_tile = (x / TILE_WIDTH as f32).ceil() as i32;
+        let y1_tile = (y / TILE_HEIGHT as f32).floor() as i32;
+        let y2_tile = (y / TILE_HEIGHT as f32).ceil() as i32;
+        return !map.collision_tiles.contains(&(x1_tile, y1_tile))
+            && !map.collision_tiles.contains(&(x2_tile, y2_tile));
+    }
     /**
     Move character if moving.
     */
-    pub fn update(&mut self) {
+    pub fn update(&mut self, map: &QomMap) {
         // Todo: Track time since last update to move the player a delta amount
 
         // Todo: If a player taps a movement key, move to the next tile.
 
         // Convert direction to vector
-        let mut move_to: Point2<f32> = match self.current_desired_direction {
+        let move_to: Point2<f32> = match self.current_desired_direction {
             MoveDirection::Left => Point2::new(-1.0, 0.0),
             MoveDirection::Right => Point2::new(1.0, 0.0),
             MoveDirection::Up => Point2::new(0.0, -1.0),
@@ -130,11 +159,24 @@ impl QomPlayerObject {
             self.current_direction_speed = self
                 .current_direction_speed
                 .min(PIXEL_MOVE_SPEED_PER_SECOND_MAX_SPEED);
-            self.pixel_position.x += move_to.x * self.current_direction_speed / 60.0;
-            self.pixel_position.y += move_to.y * self.current_direction_speed / 60.0;
+            // Check collisions
+            let new_x_position =
+                self.pixel_position.x + (move_to.x * self.current_direction_speed / 60.0);
+            let new_y_position =
+                self.pixel_position.y + (move_to.y * self.current_direction_speed / 60.0);
+            let can_move_x = self.can_move_to_x_position(map, new_x_position);
+            let can_move_y = self.can_move_to_y_position(map, new_y_position);
+            let can_move_both = self.can_move_to_x_y_position(map, new_x_position, new_y_position);
+            if can_move_x {
+                self.pixel_position.x = new_x_position;
+            }
+            if can_move_y && (!can_move_x || can_move_both) {
+                self.pixel_position.y = new_y_position;
+            }
         } else {
             self.current_direction_speed = 0.0;
         }
+        /*
         // Center the player on the tile if not moving
         if move_to.x == 0.0 && move_to.y != 0.0 {
             // Todo split tile -> pixel and pixel -> tile conversion into utility functions
@@ -162,6 +204,7 @@ impl QomPlayerObject {
                 self.pixel_position.y += PIXEL_REALIGNMENT_SPEED_PER_SECOND / 60.0;
             }
         }
+        */
     }
     pub fn get_pixel_x(&self) -> f32 {
         self.pixel_position.x
