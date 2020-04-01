@@ -13,11 +13,24 @@ extern crate quicksilver;
 mod qom;
 
 use crate::qom::QuestOfMagic;
+use quicksilver::graphics::ResizeStrategy;
 use quicksilver::{
     geom::Vector,
     lifecycle::{run, Settings},
 };
 
 fn main() {
-    run::<QuestOfMagic>("Quest of Magic", Vector::new(800, 600), Settings::default());
+    run::<QuestOfMagic>(
+        "Quest of Magic",
+        Vector::new(800, 600),
+        Settings {
+            resize: ResizeStrategy::Stretch,
+            vsync: false,
+            draw_rate: 1000.0 / 120.0,
+            update_rate: 1000.0 / 240.0,
+            multisampling: Some(2),
+            max_updates: 10,
+            ..Settings::default()
+        },
+    );
 }
